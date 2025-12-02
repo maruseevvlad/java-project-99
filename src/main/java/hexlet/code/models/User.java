@@ -22,6 +22,8 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
+    // Хранится хешированный пароль
+    @Column(nullable = false)
     private String password;
 
     private LocalDateTime createdAt;
