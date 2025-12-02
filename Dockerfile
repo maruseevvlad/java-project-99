@@ -29,5 +29,5 @@ COPY --from=build /app/build/libs/*.jar app.jar
 # Порт, который слушает Spring Boot
 EXPOSE 8080
 
-# Команда запуска
+# Запуск приложения с профилем продакшн
 CMD ["java", "-jar", "app.jar", "--spring.profiles.active=prod"]

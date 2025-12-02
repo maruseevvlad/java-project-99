@@ -19,23 +19,20 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	// Spring Boot Web и JPA
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok:1.18.30'
+	annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+	// Базы данных
+	runtimeOnly 'com.h2database:h2'           // для разработки
+	runtimeOnly 'org.postgresql:postgresql'   // для продакшена
+
+	// Тестирование
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	implementation 'org.springframework.boot:spring-boot-starter'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	implementation("org.springframework.boot:spring-boot-starter-web")
-	implementation("org.springframework.boot:spring-boot-starter")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-
-	// H2 для разработки
-	runtimeOnly 'com.h2database:h2'
-
-	// PostgreSQL для продакшена
-	runtimeOnly 'org.postgresql:postgresql'
-
-	// Остальные зависимости
-
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
