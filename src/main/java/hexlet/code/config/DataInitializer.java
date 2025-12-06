@@ -1,29 +1,29 @@
-package hexlet.code.init;
+package hexlet.code.config;
 
 import hexlet.code.models.User;
 import hexlet.code.repositories.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-    private final UserRepository repo;
-    private final BCryptPasswordEncoder encoder;
+    private final UserRepository userRepository;
+    private final PasswordEncoder encoder;
+
+    public DataInitializer(UserRepository userRepository, PasswordEncoder encoder) {
+        this.userRepository = userRepository;
+        this.encoder = encoder;
+    }
 
     @Override
     public void run(String... args) {
-
-        if (repo.findAll().isEmpty()) {
+        if (userRepository.findAll().isEmpty()) {
             User admin = new User();
             admin.setEmail("hexlet@example.com");
             admin.setPassword(encoder.encode("qwerty"));
-            repo.save(admin);
-
-            System.out.println("Admin user created!");
+            userRepository.save(admin);
         }
     }
 }
