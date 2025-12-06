@@ -1,8 +1,11 @@
 package hexlet.code.controllers;
 
+import hexlet.code.config.SecurityUtils;
 import hexlet.code.dto.*;
 import hexlet.code.models.User;
 import hexlet.code.services.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -20,32 +23,65 @@ public class UserController {
     }
 
     @PostMapping
-    public UserResponseDto createUser(@Valid @RequestBody UserCreateDto dto) {
+    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserCreateDto dto) {
+        String currentUserEmail = SecurityUtils.getCurrentUserEmail();
+        if (!SecurityUtils.isAdmin(currentUserEmail)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         User user = userService.createUser(dto);
-        return mapToResponse(user);
+        return ResponseEntity.ok(mapToResponse(user));
     }
 
     @GetMapping("/{id}")
-    public UserResponseDto getUser(@PathVariable Long id) {
-        return mapToResponse(userService.getUser(id));
+    public ResponseEntity<UserResponseDto> getUser(@PathVariable Long id) {
+        try {
+            User user = userService.getUser(id);
+            return ResponseEntity.ok(mapToResponse(user));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @GetMapping
-    public List<UserResponseDto> getAllUsers() {
-        return userService.getAllUsers().stream()
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+        String currentUserEmail = SecurityUtils.getCurrentUserEmail();
+        if (!SecurityUtils.isAdmin(currentUserEmail)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        List<UserResponseDto> users = userService.getAllUsers().stream()
             .map(this::mapToResponse)
             .collect(Collectors.toList());
+        return ResponseEntity.ok(users);
     }
 
     @PutMapping("/{id}")
-    public UserResponseDto updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateDto dto) {
-        User updated = userService.updateUser(id, dto);
-        return mapToResponse(updated);
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateDto dto) {
+        String currentUserEmail = SecurityUtils.getCurrentUserEmail();
+        try {
+            User existingUser = userService.getUser(id);
+            if (!existingUser.getEmail().equals(currentUserEmail) && !SecurityUtils.isAdmin(currentUserEmail)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            User updated = userService.updateUser(id, dto);
+            return ResponseEntity.ok(mapToResponse(updated));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        String currentUserEmail = SecurityUtils.getCurrentUserEmail();
+        try {
+            User existingUser = userService.getUser(id);
+            if (!existingUser.getEmail().equals(currentUserEmail) && !SecurityUtils.isAdmin(currentUserEmail)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            userService.deleteUser(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     private UserResponseDto mapToResponse(User user) {
