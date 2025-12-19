@@ -1,0 +1,12 @@
+{
+  "name": "java-project-99",
+  "version": "1.0.0",
+  "description": "Frontend build configuration for the Hexlet task manager UI.",
+  "private": true,
+  "scripts": {
+    "build-frontend": "build-frontend"
+  },
+  "dependencies": {
+    "@hexlet/java-task-manager-frontend": "*"
+  }
+}
