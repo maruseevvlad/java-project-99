@@ -3,6 +3,7 @@ package hexlet.code.service;
 import hexlet.code.dto.UserCreateDto;
 import hexlet.code.dto.UserUpdateDto;
 import hexlet.code.model.User;
+import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.UserRepository;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -21,10 +22,12 @@ import hexlet.code.security.CustomUserDetails;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TaskRepository taskRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TaskRepository taskRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.taskRepository = taskRepository;
     }
 
     public User createUser(UserCreateDto data) {
@@ -66,6 +69,9 @@ public class UserService implements UserDetailsService {
     public void deleteUser(Long id) {
         User user = findById(id);
         ensureOwnership(user.getId());
+        if (taskRepository.existsByAssigneeId(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete user linked to tasks");
+        }
         userRepository.delete(user);
     }
 

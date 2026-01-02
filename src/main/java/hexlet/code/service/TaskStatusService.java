@@ -3,6 +3,7 @@ package hexlet.code.service;
 import hexlet.code.dto.TaskStatusCreateDto;
 import hexlet.code.dto.TaskStatusUpdateDto;
 import hexlet.code.model.TaskStatus;
+import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -12,9 +13,11 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class TaskStatusService {
     private final TaskStatusRepository taskStatusRepository;
+    private final TaskRepository taskRepository;
 
-    public TaskStatusService(TaskStatusRepository taskStatusRepository) {
+    public TaskStatusService(TaskStatusRepository taskStatusRepository, TaskRepository taskRepository) {
         this.taskStatusRepository = taskStatusRepository;
+        this.taskRepository = taskRepository;
     }
 
     public TaskStatus create(TaskStatusCreateDto data) {
@@ -46,6 +49,9 @@ public class TaskStatusService {
 
     public void delete(Long id) {
         TaskStatus taskStatus = findById(id);
+        if (taskRepository.existsByTaskStatusId(taskStatus.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete status linked to tasks");
+        }
         taskStatusRepository.delete(taskStatus);
     }
 }
