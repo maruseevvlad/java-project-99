@@ -13,3 +13,7 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+sentry:
+  dsn: ${SENTRY_AUTH_TOKEN:}
+  environment: ${SPRING_PROFILES_ACTIVE:development}
