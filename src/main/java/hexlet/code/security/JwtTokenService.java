@@ -3,7 +3,7 @@ package hexlet.code.security;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class JwtTokenService {
-    private final Key signingKey;
+    private final SecretKey signingKey;
 
     public JwtTokenService(@Value("${jwt.secret:very-secret-key}") String secret) {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
