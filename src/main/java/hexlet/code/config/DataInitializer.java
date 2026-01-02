@@ -1,7 +1,9 @@
 package hexlet.code.config;
 
+import hexlet.code.model.Label;
 import hexlet.code.model.User;
 import hexlet.code.model.TaskStatus;
+import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -38,12 +40,28 @@ public class DataInitializer {
         };
     }
 
+    @Bean
+    public CommandLineRunner seedLabels(LabelRepository labelRepository) {
+        return args -> {
+            createLabelIfMissing(labelRepository, "feature");
+            createLabelIfMissing(labelRepository, "bug");
+        };
+    }
+
     private void createStatusIfMissing(TaskStatusRepository repository, String name, String slug) {
         repository.findBySlug(slug).orElseGet(() -> {
             TaskStatus status = new TaskStatus();
             status.setName(name);
             status.setSlug(slug);
             return repository.save(status);
+        });
+    }
+
+    private void createLabelIfMissing(LabelRepository repository, String name) {
+        repository.findByName(name).orElseGet(() -> {
+            Label label = new Label();
+            label.setName(name);
+            return repository.save(label);
         });
     }
 }
