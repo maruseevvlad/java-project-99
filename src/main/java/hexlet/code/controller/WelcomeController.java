@@ -10,4 +10,9 @@ public class WelcomeController {
     public String welcome() {
         return "Welcome to Spring";
     }
+
+    @GetMapping("/")
+    public String root() {
+        return "Welcome to Spring";
+    }
 }

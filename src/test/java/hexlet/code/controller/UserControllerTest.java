@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
@@ -41,7 +42,8 @@ class UserControllerTest {
 
     @Test
     void shouldListUsersWithoutPasswords() throws Exception {
-        mockMvc.perform(get("/api/users"))
+        mockMvc.perform(get("/api/users")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(loginAsAdmin())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].email").value("hexlet@example.com"))
                 .andExpect(jsonPath("$[0].password").doesNotExist());
@@ -57,7 +59,8 @@ class UserControllerTest {
 
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(params)))
+                        .content(objectMapper.writeValueAsString(params))
+                        .header(HttpHeaders.AUTHORIZATION, bearer(loginAsAdmin())))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.email").value("john@example.com"))
                 .andExpect(jsonPath("$.password").doesNotExist());
@@ -74,7 +77,8 @@ class UserControllerTest {
 
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(params)))
+                        .content(objectMapper.writeValueAsString(params))
+                        .header(HttpHeaders.AUTHORIZATION, bearer(loginAsAdmin())))
                 .andExpect(status().isBadRequest());
     }
 
@@ -82,7 +86,8 @@ class UserControllerTest {
     void shouldGetUserByIdWithoutPassword() throws Exception {
         User user = createUser("user@example.com", "User", "Example", "password");
 
-        mockMvc.perform(get("/api/users/" + user.getId()))
+        mockMvc.perform(get("/api/users/" + user.getId())
+                        .header(HttpHeaders.AUTHORIZATION, bearer(loginAsAdmin())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("user@example.com"))
                 .andExpect(jsonPath("$.password").doesNotExist());
@@ -98,7 +103,8 @@ class UserControllerTest {
 
         mockMvc.perform(put("/api/users/" + user.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(params)))
+                        .content(objectMapper.writeValueAsString(params))
+                        .header(HttpHeaders.AUTHORIZATION, bearer(loginAs(user, "oldpass"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("new@example.com"))
                 .andExpect(jsonPath("$.firstName").value("Old"))
@@ -112,7 +118,8 @@ class UserControllerTest {
     void shouldDeleteUser() throws Exception {
         User user = createUser("remove@example.com", "Remove", "Me", "todelete");
 
-        mockMvc.perform(delete("/api/users/" + user.getId()))
+        mockMvc.perform(delete("/api/users/" + user.getId())
+                        .header(HttpHeaders.AUTHORIZATION, bearer(loginAs(user, "todelete"))))
                 .andExpect(status().isNoContent());
 
         assertThat(userRepository.findById(user.getId())).isEmpty();
@@ -125,5 +132,37 @@ class UserControllerTest {
         user.setLastName(lastName);
         user.setPassword(passwordEncoder.encode(password));
         return userRepository.save(user);
+    }
+
+    private String loginAs(User user, String rawPassword) throws Exception {
+        Map<String, Object> params = new HashMap<>();
+        params.put("username", user.getEmail());
+        params.put("password", rawPassword);
+
+        return mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(params)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+    }
+
+    private String loginAsAdmin() throws Exception {
+        Map<String, Object> params = new HashMap<>();
+        params.put("username", "hexlet@example.com");
+        params.put("password", "qwerty");
+
+        return mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(params)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+    }
+
+    private String bearer(String token) {
+        return "Bearer " + token;
     }
 }
