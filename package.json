@@ -1,0 +1,16 @@
+{
+  "name": "java-project-99",
+  "version": "0.1.0",
+  "description": "Build helpers for the Task Manager frontend bundle",
+  "private": true,
+  "scripts": {
+    "build-frontend": "npx build-frontend"
+  },
+  "keywords": [
+    "task-manager",
+    "frontend"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
