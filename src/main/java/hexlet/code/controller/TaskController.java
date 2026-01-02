@@ -2,6 +2,7 @@ package hexlet.code.controller;
 
 import hexlet.code.dto.TaskCreateDto;
 import hexlet.code.dto.TaskDto;
+import hexlet.code.dto.TaskParams;
 import hexlet.code.dto.TaskUpdateDto;
 import hexlet.code.model.Task;
 import hexlet.code.service.TaskService;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,8 +30,13 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskDto> index() {
-        return taskService.findAll().stream()
+    public List<TaskDto> index(@RequestParam(required = false) String titleCont,
+                               @RequestParam(required = false) Long assigneeId,
+                               @RequestParam(required = false) String status,
+                               @RequestParam(required = false) Long labelId) {
+        TaskParams params = new TaskParams(titleCont, assigneeId, status, labelId);
+
+        return taskService.findAll(params).stream()
                 .map(TaskDto::fromEntity)
                 .toList();
     }

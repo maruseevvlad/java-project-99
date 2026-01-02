@@ -1,6 +1,7 @@
 package hexlet.code.service;
 
 import hexlet.code.dto.TaskCreateDto;
+import hexlet.code.dto.TaskParams;
 import hexlet.code.dto.TaskUpdateDto;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
@@ -10,10 +11,12 @@ import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
+import hexlet.code.specification.TaskSpecification;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -40,8 +43,26 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public List<Task> findAll() {
-        return taskRepository.findAll();
+    public List<Task> findAll(TaskParams params) {
+        Specification<Task> spec = Specification.where(null);
+
+        if (params.titleCont() != null) {
+            spec = spec.and(TaskSpecification.titleContains(params.titleCont()));
+        }
+
+        if (params.assigneeId() != null) {
+            spec = spec.and(TaskSpecification.hasAssignee(params.assigneeId()));
+        }
+
+        if (params.status() != null) {
+            spec = spec.and(TaskSpecification.hasStatus(params.status()));
+        }
+
+        if (params.labelId() != null) {
+            spec = spec.and(TaskSpecification.hasLabel(params.labelId()));
+        }
+
+        return taskRepository.findAll(spec);
     }
 
     public Task findById(Long id) {

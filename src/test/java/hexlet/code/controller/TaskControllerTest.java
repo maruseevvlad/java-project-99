@@ -4,11 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.model.User;
+import hexlet.code.model.Label;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
+import hexlet.code.repository.LabelRepository;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,6 +24,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -49,6 +54,9 @@ class TaskControllerTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private LabelRepository labelRepository;
 
     @Test
     void shouldRequireAuthForTasks() throws Exception {
@@ -121,12 +129,47 @@ class TaskControllerTest {
         assertThat(taskRepository.findById(task.getId())).isEmpty();
     }
 
+    @Test
+    void shouldFilterTasksByParams() throws Exception {
+        User assignee = createUser("worker@example.com", "Worker", "Bee", "password");
+        Label bugLabel = createLabel("bug");
+        Label featureLabel = createLabel("feature");
+
+        createTask("Fix login bug", "to_be_fixed", assignee, Set.of(bugLabel));
+        createTask("Implement new feature", "draft", null, Set.of(featureLabel));
+        createTask("Misc task", "draft", assignee, Set.of());
+
+        mockMvc.perform(get("/api/tasks")
+                        .param("titleCont", "fix")
+                        .param("assigneeId", assignee.getId().toString())
+                        .param("status", "to_be_fixed")
+                        .param("labelId", bugLabel.getId().toString())
+                        .header(HttpHeaders.AUTHORIZATION, bearer(loginAsAdmin())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title").value("Fix login bug"))
+                .andExpect(jsonPath("$[0].status").value("to_be_fixed"))
+                .andExpect(jsonPath("$[0].assignee_id").value(assignee.getId()));
+    }
+
     private Task createTask(String title, String statusSlug) {
+        return createTask(title, statusSlug, null, Set.of());
+    }
+
+    private Task createTask(String title, String statusSlug, User assignee, Set<Label> labels) {
         TaskStatus status = taskStatusRepository.findBySlug(statusSlug).orElseThrow();
         Task task = new Task();
         task.setTitle(title);
         task.setTaskStatus(status);
+        task.setAssignee(assignee);
+        task.setLabels(new HashSet<>(labels));
         return taskRepository.save(task);
+    }
+
+    private Label createLabel(String name) {
+        Label label = new Label();
+        label.setName(name);
+        return labelRepository.save(label);
     }
 
     private User createUser(String email, String firstName, String lastName, String password) {
