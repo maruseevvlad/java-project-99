@@ -44,7 +44,7 @@ public class TaskService {
     }
 
     public List<Task> findAll(TaskParams params) {
-        Specification<Task> spec = Specification.where(null);
+        Specification<Task> spec = Specification.<Task>where(null);
 
         if (params.titleCont() != null) {
             spec = spec.and(TaskSpecification.titleContains(params.titleCont()));
