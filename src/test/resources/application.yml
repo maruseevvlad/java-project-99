@@ -1,0 +1,31 @@
+spring:
+  profiles:
+    active: test
+
+logging:
+  level:
+    root: WARN
+    org:
+      springframework:
+        security: DEBUG
+
+jackson:
+  default-property-inclusion: non_null
+  serialization:
+    indent_output: true
+
+instancio:
+  bean:
+    validation:
+      enabled: true
+
+jpa:
+  show-sql: true
+
+output:
+  ansi:
+    enabled: always
+
+rsa:
+  private-key: classpath:certs/private.pem
+  public-key: classpath:certs/public.pem

@@ -1,0 +1,40 @@
+name: Build
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      RSA_PRIVATE_KEY: ${{ secrets.RSA_PRIVATE_KEY }}
+      RSA_PUBLIC_KEY: ${{ secrets.RSA_PUBLIC_KEY }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@v3
+        with:
+          arguments: build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
+        with:
+          args: >
+            -Dsonar.organization=arturstimbiris
+            -Dsonar.projectKey=ArturStimbiris_java-project-99
+            -Dsonar.java.binaries=build/classes
+            -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
+            -Dsonar.coverage.exclusions=**/src/test/**,**/config/**,**/dto/**,**/model/**,**/exception/**
+            -Dsonar.cpd.exclusions=**/src/test/**/**
+            -Dsonar.ci.autoconfig.disabled=true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

@@ -1,0 +1,21 @@
+sentry:
+  dsn: ""
+  enabled: false
+
+rsa:
+  private-key: classpath:certs/private.pem
+  public-key: classpath:certs/public.pem
+  expiration: 86400000
+
+spring:
+  jpa:
+    generate-ddl: true
+    show-sql: false
+  output:
+    ansi:
+      enabled: never
+
+logging:
+  level:
+    root: ERROR
+    org.springframework.security: ERROR
