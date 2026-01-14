@@ -8,13 +8,7 @@ COPY build.gradle.kts .
 COPY settings.gradle.kts .
 COPY src src
 
-# Если Hexlet action подмешивает директорию code (как в CI), заберем её тоже.
-# Локально директории code у вас нет - поэтому COPY делаем условно через отдельный слой:
-# В Dockerfile нельзя "условный COPY", поэтому используем прием:
-# 1) COPY code code будет работать только если code есть в контексте.
-# 2) Чтобы локальная сборка не ломалась, просто удалите следующую строку, если собираете локально без code.
-#    (В CI она нужна.)
-COPY code code
+
 
 # Права на gradlew (в корне) и на code/gradlew (если он есть)
 RUN chmod +x gradlew \
