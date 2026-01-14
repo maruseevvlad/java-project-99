@@ -4,7 +4,7 @@
 
 ### Demo  
 Рабочая демо-версия приложения доступна по адресу:  
-https://java-project-99-8dn6.onrender.com
+
 
 ## Task Manager — Система управления задачами
 
@@ -47,7 +47,7 @@ Task Manager — это полнофункциональная система у
 
 1. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/ArturStimbiris/java-project-99.git
+   [git clone https://github.com/ArturStimbiris/java-project-99.git](https://github.com/maruseevvlad/java-project-99.git)
    ```
 
 2. Установите зависимости и запустите приложение:
